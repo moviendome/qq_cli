@@ -5,13 +5,19 @@ pub struct CommandMapping {
     pub install: String,
     pub migrate: Option<String>,
     pub start: Option<String>,
-    pub test: Option<String>
+    pub test: Option<String>,
 }
 
 impl CommandMapping {
     pub fn for_project_type(project_type: &ProjectType, current_dir: &PathBuf) -> Option<Self> {
         match project_type {
-            ProjectType::Rails =>  {
+            ProjectType::NodeJs => Some(Self {
+                install: "npm install".to_string(),
+                migrate: None,
+                start: Some("npm start".to_string()),
+                test: None,
+            }),
+            ProjectType::Rails => {
                 let test_command = determine_rails_test_command(current_dir);
 
                 Some(Self {
@@ -20,12 +26,12 @@ impl CommandMapping {
                     start: Some("bin/dev".to_string()),
                     test: test_command,
                 })
-            },
-            ProjectType::NodeJs => Some(Self {
-                install: "npm install".to_string(),
+            }
+            ProjectType::Rust => Some(Self {
+                install: "cargo build".to_string(),
                 migrate: None,
-                start: Some("npm start".to_string()),
-                test: None,
+                start: Some("cargo run".to_string()),
+                test: Some("cargo test".to_string()),
             }),
             ProjectType::Unknown => None,
         }
