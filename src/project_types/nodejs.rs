@@ -1,6 +1,7 @@
 use crate::project_type_trait::ProjectTypeCommands;
 use std::path::Path;
 
+#[derive(Debug)]
 pub struct Nodejs;
 
 impl Nodejs {
@@ -12,8 +13,10 @@ impl Nodejs {
         }
     }
 }
-
 impl ProjectTypeCommands for Nodejs {
+    fn name(&self) -> &'static str {
+        "Nodejs"
+    }
     fn install_command(&self) -> String {
         "npm install".to_string()
     }
@@ -28,5 +31,21 @@ impl ProjectTypeCommands for Nodejs {
 
     fn test_command(&self) -> Option<String> {
         None
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::fs::File;
+    use tempfile::tempdir;
+
+    #[test]
+    fn test_detect_nodejs_project() {
+        let dir = tempdir().unwrap();
+        File::create(dir.path().join("package.json")).unwrap();
+
+        let project_type = Nodejs::detect(dir.path()); // This function returns Box<dyn ProjectTypeCommands>
+        assert!(project_type.is_some() && project_type.unwrap().name() == "Nodejs");
     }
 }

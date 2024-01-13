@@ -1,6 +1,7 @@
 use crate::project_type_trait::ProjectTypeCommands;
 use std::path::Path;
 
+#[derive(Debug)]
 pub struct Rails;
 
 impl Rails {
@@ -14,6 +15,10 @@ impl Rails {
 }
 
 impl ProjectTypeCommands for Rails {
+    fn name(&self) -> &'static str {
+        "Rails"
+    }
+
     fn install_command(&self) -> String {
         "bundle install".to_string()
     }
@@ -27,8 +32,6 @@ impl ProjectTypeCommands for Rails {
     }
 
     fn test_command(&self) -> Option<String> {
-        // Here, you should decide how to determine if the project uses RSpec or Minitest.
-        // For example, checking for a 'spec' directory for RSpec:
         let test_dir = Path::new("test");
         let spec_dir = Path::new("spec");
 
@@ -39,5 +42,21 @@ impl ProjectTypeCommands for Rails {
         } else {
             None
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::fs::File;
+    use tempfile::tempdir;
+
+    #[test]
+    fn test_detect_rails_project() {
+        let dir = tempdir().unwrap();
+        File::create(dir.path().join("Gemfile")).unwrap();
+
+        let project_type = Rails::detect(dir.path()); // This function returns Box<dyn ProjectTypeCommands>
+        assert!(project_type.is_some() && project_type.unwrap().name() == "Rails");
     }
 }

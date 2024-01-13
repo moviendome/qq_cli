@@ -1,6 +1,7 @@
 use crate::project_type_trait::ProjectTypeCommands;
 use std::path::Path;
 
+#[derive(Debug)]
 pub struct Rust;
 
 impl Rust {
@@ -14,6 +15,9 @@ impl Rust {
 }
 
 impl ProjectTypeCommands for Rust {
+    fn name(&self) -> &'static str {
+        "Rust"
+    }
     fn install_command(&self) -> String {
         "cargo build".to_string()
     }
@@ -28,5 +32,21 @@ impl ProjectTypeCommands for Rust {
 
     fn test_command(&self) -> Option<String> {
         Some("cargo test".to_string())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::fs::File;
+    use tempfile::tempdir;
+
+    #[test]
+    fn test_detect_rust_project() {
+        let dir = tempdir().unwrap();
+        File::create(dir.path().join("Cargo.lock")).unwrap();
+
+        let project_type = Rust::detect(dir.path()); // This function returns Box<dyn ProjectTypeCommands>
+        assert!(project_type.is_some() && project_type.unwrap().name() == "Rust");
     }
 }
