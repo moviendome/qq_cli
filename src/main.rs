@@ -1,11 +1,9 @@
-mod nodejs;
 mod project_type_trait;
-mod rails;
-mod rust;
+mod project_types;
 
-use nodejs::Nodejs;
-use rails::Rails;
-use rust::Rust;
+use project_types::nodejs::Nodejs;
+use project_types::rails::Rails;
+use project_types::rust::Rust;
 
 use clap::{App, AppSettings, SubCommand};
 use std::env;
