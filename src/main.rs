@@ -37,10 +37,17 @@ fn main() {
     let current_dir = env::current_dir().expect("Failed to get current directory");
 
     // Detect the project type
-    let commands = Rails::detect(&current_dir)
+    let project_type = Rails::detect(&current_dir)
         .or_else(|| Nodejs::detect(&current_dir))
-        .or_else(|| Rust::detect(&current_dir))
-        .expect("Project type not supported");
+        .or_else(|| Rust::detect(&current_dir));
+
+    let commands = match project_type {
+        Some(pt) => pt,
+        None => {
+            println!("Project type found in current directory is not supported.");
+            return; // or use std::process::exit(1) for an error exit code
+        }
+    };
 
     match matches.subcommand() {
         Some(("install", _)) => run_command(&commands.install_command()),
