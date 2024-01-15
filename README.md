@@ -1,26 +1,27 @@
+![GitHub Workflow Status](http://img.shields.io/github/actions/workflow/status/moviendome/qq_cli/rust.yml?branch=main&style=for-the-badge)
+![Lua](https://img.shields.io/badge/Made%20with%20Rust-blueviolet.svg?style=for-the-badge&logo=rust)
+
 # QQ CLI
 
-## About
-
-QQ CLI is a versatile command-line interface tool designed as a Proof of Concept to automate and simplify tasks in development environments. This first version primarily focuses on Ruby on Rails and Node.js projects. By intelligently detecting the project type can execute a set of basic commands.
+`QQ CLI` is a versatile command-line interface tool designed as a Proof of Concept to automate and simplify tasks in development environments. This first version primarily focuses on Ruby on Rails, Node.js & Rust projects. By intelligently detecting the project type can execute a set of basic commands.
 
 ## Features
 
-- **Focused on Ruby on Rails and Node.js**: Tailored to handle common tasks in Rails and Node.js projects.
+- **Focused on Ruby on Rails and Node.js**: Tailored to handle common tasks in Rails, Node.js and Rust projects.
 - **Intelligent Project Detection**: Automatically identifies the type of project and executes relevant commands.
-- **Basic Command Set**: Supports basic commands like installation, migration, starting servers, and running tests for Rails projects.
+- **Basic Command Set**: Supports basic commands like installation, migration, starting servers, and running tests for Rails & Rust projects.
 - **Proof of Concept**: Demonstrates the potential for a more extensive tool with broader capabilities in future versions.
 
 ## Version 0.1.0
 
-This initial version includes basic functionalities for [Rails](https://rubyonrails.org/) and [Node.js](https://nodejs.org/en) projects:
+This initial version includes basic functionalities for [Rails](https://rubyonrails.org/), [Node.js](https://nodejs.org/en) and [Rust](https://www.rust-lang.org/) projects:
 
 - Detection of project type.
 - Execution of basic commands:
   - `install` (or `i`): Installs dependencies.
   - `migrate` (or `m`): Runs database migrations for Rails projects.
   - `start` (or `s`): Starts the project server.
-  - `test`: Runs the test suite for Rails projects (Minitest or Rspec).
+  - `test`: Runs the test suite for Rails projects (Minitest or Rspec) & Rust.
 
 ## Future Development
 
@@ -30,7 +31,7 @@ This initial version includes basic functionalities for [Rails](https://rubyonra
 
 - **Configuration File Support**: To increase flexibility, I plan to implement support for configuration files. This will allow users to customize the behavior according to their specific needs, making the tool more versatile and personalized.
 
-- **Extensibility and Modularity**: A key goal is to design QQ CLI with extensibility and modularity in mind. This would enable easy integration of new languages, frameworks, and features, fostering a tool that evolves alongside the ever-changing landscape of software development.
+- **Extensibility and Modularity**: A key goal is to design `QQ CLI` with extensibility and modularity in mind. This would enable easy integration of new languages, frameworks, and features, fostering a tool that evolves alongside the ever-changing landscape of software development.
 
 ### Leveraging AI and AGI in Development
 
