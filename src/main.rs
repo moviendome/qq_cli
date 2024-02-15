@@ -26,6 +26,11 @@ fn main() {
                 .alias("m"),
         )
         .subcommand(
+            SubCommand::with_name("console")
+                .about("Runs console")
+                .alias("c"),
+        )
+        .subcommand(
             SubCommand::with_name("start")
                 .about("Starts the project")
                 .alias("s"),
@@ -56,6 +61,13 @@ fn main() {
                 run_command(&cmd);
             } else {
                 println!("'migrate' command not supported for this project type.");
+            }
+        }
+        Some(("console", _)) => {
+            if let Some(cmd) = commands.console_command() {
+                run_command(&cmd);
+            } else {
+                println!("'console' command not supported for this project type.");
             }
         }
         Some(("start", _)) => {

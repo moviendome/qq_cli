@@ -25,6 +25,10 @@ impl ProjectTypeCommands for Nodejs {
         None
     }
 
+    fn console_command(&self) -> Option<String> {
+        None
+    }
+
     fn start_command(&self) -> Option<String> {
         Some("npm start".to_string())
     }

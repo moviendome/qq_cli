@@ -27,8 +27,12 @@ impl ProjectTypeCommands for Rails {
         Some("bin/rails db:migrate".to_string())
     }
 
+    fn console_command(&self) -> Option<String> {
+        Some("bin/rails c".to_string())
+    }
+
     fn start_command(&self) -> Option<String> {
-        Some("bin/rails server".to_string())
+        Some("bin/dev".to_string())
     }
 
     fn test_command(&self) -> Option<String> {
@@ -36,7 +40,7 @@ impl ProjectTypeCommands for Rails {
         let spec_dir = Path::new("spec");
 
         if spec_dir.exists() {
-            Some("bin/rspec".to_string())
+            Some("bin/rspec spec/".to_string())
         } else if test_dir.exists() {
             Some("bin/rails test".to_string())
         } else {
