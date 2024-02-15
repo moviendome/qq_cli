@@ -37,6 +37,10 @@ impl ProjectTypeCommands for Rust {
     fn test_command(&self) -> Option<String> {
         Some("cargo test".to_string())
     }
+
+    fn routes_command(&self) -> Option<String> {
+        None
+    }
 }
 
 #[cfg(test)]

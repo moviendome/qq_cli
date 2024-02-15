@@ -36,6 +36,10 @@ impl ProjectTypeCommands for Nodejs {
     fn test_command(&self) -> Option<String> {
         None
     }
+
+    fn routes_command(&self) -> Option<String> {
+        None
+    }
 }
 
 #[cfg(test)]

@@ -1,5 +1,6 @@
 use crate::project_type_trait::ProjectTypeCommands;
 use std::path::Path;
+use std::process::Command;
 
 #[derive(Debug)]
 pub struct Rails;
@@ -45,6 +46,21 @@ impl ProjectTypeCommands for Rails {
             Some("bin/rails test".to_string())
         } else {
             None
+        }
+    }
+
+    fn routes_command(&self) -> Option<String> {
+        let is_fzf_installed = {
+            Command::new("fzf")
+                .arg("--version")
+                .output()
+                .map_or(false, |output| output.status.success())
+        };
+
+        if is_fzf_installed {
+            Some("bin/rails routes | fzf -e".to_string())
+        } else {
+            Some("bin/rails routes".to_string())
         }
     }
 }

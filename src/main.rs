@@ -36,6 +36,11 @@ fn main() {
                 .alias("s"),
         )
         .subcommand(SubCommand::with_name("test").about("Run tests").alias("t"))
+        .subcommand(
+            SubCommand::with_name("routes")
+                .about("Show Routes")
+                .alias("r"),
+        )
         .after_help("Use 'qq [command]' to execute a command.")
         .get_matches();
 
@@ -82,6 +87,13 @@ fn main() {
                 run_command(&cmd);
             } else {
                 println!("'test' command not supported for this project type.");
+            }
+        }
+        Some(("routes", _)) => {
+            if let Some(cmd) = commands.routes_command() {
+                run_command(&cmd);
+            } else {
+                println!("'routes' command not supported for this project type.");
             }
         }
         _ => println!("Command not recognized."),

@@ -7,4 +7,5 @@ pub trait ProjectTypeCommands: Debug {
     fn console_command(&self) -> Option<String>;
     fn start_command(&self) -> Option<String>;
     fn test_command(&self) -> Option<String>;
+    fn routes_command(&self) -> Option<String>;
 }
