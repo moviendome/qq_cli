@@ -21,7 +21,7 @@ This initial version includes basic functionalities for [Rails](https://rubyonra
   - `install` (or `i`): Installs dependencies.
   - `migrate` (or `m`): Runs database migrations for Rails projects.
   - `start` (or `s`): Starts the project server.
-  - `test` (or `t`): Runs the test suite for Rails projects (Minitest or Rspec) & Rust.
+  - `test` (or `t`): Runs the test suite for Rails projects (Minitest or Rspec), Node.js & Rust.
   - `routes` (or `r`): Show routes for Rails projects (uses fzf if available).
 
 ## Future Development

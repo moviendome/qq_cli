@@ -34,7 +34,7 @@ impl ProjectTypeCommands for Nodejs {
     }
 
     fn test_command(&self) -> Option<String> {
-        None
+        Some("npm test".to_string())
     }
 
     fn routes_command(&self) -> Option<String> {
