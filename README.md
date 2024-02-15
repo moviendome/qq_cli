@@ -7,7 +7,7 @@
 
 ## Features
 
-- **Focused on Ruby on Rails and Node.js**: Tailored to handle common tasks in Rails, Node.js and Rust projects.
+- **Focused on Ruby on Rails, Node.js & Rust**: Tailored to handle common tasks in Rails, Node.js and Rust projects.
 - **Intelligent Project Detection**: Automatically identifies the type of project and executes relevant commands.
 - **Basic Command Set**: Supports basic commands like installation, migration, starting servers, and running tests for Rails & Rust projects.
 - **Proof of Concept**: Demonstrates the potential for a more extensive tool with broader capabilities in future versions.
@@ -21,7 +21,8 @@ This initial version includes basic functionalities for [Rails](https://rubyonra
   - `install` (or `i`): Installs dependencies.
   - `migrate` (or `m`): Runs database migrations for Rails projects.
   - `start` (or `s`): Starts the project server.
-  - `test`: Runs the test suite for Rails projects (Minitest or Rspec) & Rust.
+  - `test` (or `t`): Runs the test suite for Rails projects (Minitest or Rspec) & Rust.
+  - `routes` (or `r`): Show routes for Rails projects (uses fzf if available).
 
 ## Future Development
 
