@@ -7,14 +7,16 @@
 
 ## Features
 
-- **Focused on Ruby on Rails, Node.js & Rust**: Tailored to handle common tasks in Rails, Node.js and Rust projects.
+- **Focused on Ruby on Rails, Node.js, Middleman & Rust**: Tailored to handle common tasks in Rails, Node.js, Middleman and Rust projects.
 - **Intelligent Project Detection**: Automatically identifies the type of project and executes relevant commands.
 - **Basic Command Set**: Supports basic commands like installation, migration, starting servers, and running tests for Rails & Rust projects.
 - **Proof of Concept**: Demonstrates the potential for a more extensive tool with broader capabilities in future versions.
 
-## Version 0.1.0
+![Rails App Demo](https://moviendo.me/images/qq-cli/rails-app.gif)
 
-This initial version includes basic functionalities for [Rails](https://rubyonrails.org/), [Node.js](https://nodejs.org/en) and [Rust](https://www.rust-lang.org/) projects:
+## Version 0.1.1
+
+This initial version includes basic functionalities for [Rails](https://rubyonrails.org/), [Node.js](https://nodejs.org/en), [Middleman](https://middlemanapp.com/) and [Rust](https://www.rust-lang.org/) projects:
 
 - Detection of project type.
 - Execution of basic commands:
@@ -33,12 +35,6 @@ This initial version includes basic functionalities for [Rails](https://rubyonra
 - **Configuration File Support**: To increase flexibility, I plan to implement support for configuration files. This will allow users to customize the behavior according to their specific needs, making the tool more versatile and personalized.
 
 - **Extensibility and Modularity**: A key goal is to design `QQ CLI` with extensibility and modularity in mind. This would enable easy integration of new languages, frameworks, and features, fostering a tool that evolves alongside the ever-changing landscape of software development.
-
-### Leveraging AI and AGI in Development
-
-- **Fast Prototyping with AI Assistance**: Integrating AI-powered tools like [OpenAI ChatGPT](https://chat.openai.com/) and [GitHub Copilot](https://github.com/features/copilot) within Neovim to accelerate development and prototyping.
-
-- **AGI for Automated Code Management**: Exploring AGI's potential in automating code changes, conducting tests and quality assurance, and managing pull requests autonomously.
 
 ## Installation
 

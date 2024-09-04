@@ -33,7 +33,13 @@ impl ProjectTypeCommands for Rails {
     }
 
     fn start_command(&self) -> Option<String> {
-        Some("bin/dev".to_string())
+        let dev = Path::new("bin/dev");
+
+        if dev.exists() {
+            Some("bin/dev".to_string())
+        } else {
+            Some("bin/rails s".to_string())
+        }
     }
 
     fn test_command(&self) -> Option<String> {
