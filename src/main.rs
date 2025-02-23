@@ -2,8 +2,8 @@ mod project_type_trait;
 mod project_types;
 
 use project_types::middleman::Middleman;
-use project_types::rails::Rails;
 use project_types::nodejs::Nodejs;
+use project_types::rails::Rails;
 use project_types::rust::Rust;
 
 use clap::{App, AppSettings, SubCommand};
@@ -42,6 +42,32 @@ fn main() {
                 .about("Show Routes")
                 .alias("r"),
         )
+        .subcommand(
+            SubCommand::with_name("g")
+                .about("Run git status")
+                .alias("g"),
+        )
+        .subcommand(SubCommand::with_name("gl").about("Run git log").alias("gl"))
+        .subcommand(
+            SubCommand::with_name("gp")
+                .about("Run git pull")
+                .alias("gp"),
+        )
+        .subcommand(
+            SubCommand::with_name("gP")
+                .about("Run git push")
+                .alias("gP"),
+        )
+        .subcommand(
+            SubCommand::with_name("gm")
+                .about("Run git push")
+                .alias("g,"),
+        )
+        .subcommand(
+            SubCommand::with_name("ga")
+                .about("Run git push")
+                .alias("ga"),
+        )
         .after_help("Use 'qq [command]' to execute a command.")
         .get_matches();
 
@@ -62,6 +88,7 @@ fn main() {
     };
 
     match matches.subcommand() {
+        // For Project Types
         Some(("install", _)) => run_command(&commands.install_command()),
         Some(("migrate", _)) => {
             if let Some(cmd) = commands.migrate_command() {
@@ -98,6 +125,13 @@ fn main() {
                 println!("'routes' command not supported for this project type.");
             }
         }
+        // For Git
+        Some(("g", _)) => run_command("git status"),
+        Some(("gl", _)) => run_command("git lg"),
+        Some(("gp", _)) => run_command("git pull"),
+        Some(("gP", _)) => run_command("git push"),
+        Some(("gm", _)) => run_command("git checkout main"),
+        Some(("ga", _)) => run_command("git commit --amend --no-edit"),
         _ => println!("Command not recognized."),
     }
 }
