@@ -65,7 +65,7 @@ fn main() {
         )
         .subcommand(
             SubCommand::with_name("ga")
-                .about("Run git push")
+                .about("Run git amend")
                 .alias("ga"),
         )
         .after_help("Use 'qq [command]' to execute a command.")
