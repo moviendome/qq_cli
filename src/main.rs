@@ -12,10 +12,22 @@ use std::env;
 use std::process::Command;
 
 fn main() {
+    let logo = r#"
+ ________  ________           ________  ___       ___     
+|\   __  \|\   __  \         |\   ____\|\  \     |\  \    
+\ \  \|\  \ \  \|\  \        \ \  \___|\ \  \    \ \  \   
+ \ \  \\\  \ \  \\\  \        \ \  \    \ \  \    \ \  \  
+  \ \  \\\  \ \  \\\  \        \ \  \____\ \  \____\ \  \ 
+   \ \_____  \ \_____  \        \ \_______\ \_______\ \__\
+    \|___| \__\|___| \__\        \|_______|\|_______|\|__|
+          \|__|     \|__|                                 
+"#;
+
+    println!("{}", logo);
+
     let app = App::new("QQ CLI")
-        .version("0.1")
+        .version("0.2")
         .author("Moviendome <estoy@moviendo.me>")
-        .about("A CLI to run all")
         .subcommand(
             SubCommand::with_name("install")
                 .about("Installs dependencies for the project")
@@ -156,27 +168,6 @@ fn run_command(command: &str) {
 }
 
 fn show_interactive_menu(commands: Box<dyn project_type_trait::ProjectTypeCommands>) {
-    //    let logo = r#"
-    //  ___   ___    ___ _    ___
-    // / _ \ / _ \  / __| |  |_ _|
-    //| (_) | (_) || (__| |__ | |
-    // \__\_\\__\_\ \___|____|___|
-    //
-    //"#;
-
-    let logo = r#"
- ________  ________           ________  ___       ___     
-|\   __  \|\   __  \         |\   ____\|\  \     |\  \    
-\ \  \|\  \ \  \|\  \        \ \  \___|\ \  \    \ \  \   
- \ \  \\\  \ \  \\\  \        \ \  \    \ \  \    \ \  \  
-  \ \  \\\  \ \  \\\  \        \ \  \____\ \  \____\ \  \ 
-   \ \_____  \ \_____  \        \ \_______\ \_______\ \__\
-    \|___| \__\|___| \__\        \|_______|\|_______|\|__|
-          \|__|     \|__|                                 
-"#;
-
-    println!("{}", logo);
-
     let cmd = inquire::Text::new("Enter Command: ")
         .with_help_message("Enter a valid command")
         .with_autocomplete(&utils::suggester)
