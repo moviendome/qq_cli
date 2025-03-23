@@ -22,24 +22,12 @@ impl ProjectTypeCommands for Rust {
         "cargo build".to_string()
     }
 
-    fn migrate_command(&self) -> Option<String> {
-        None
-    }
-
-    fn console_command(&self) -> Option<String> {
-        None
-    }
-
     fn start_command(&self) -> Option<String> {
         Some("cargo run".to_string())
     }
 
     fn test_command(&self) -> Option<String> {
         Some("cargo test".to_string())
-    }
-
-    fn routes_command(&self) -> Option<String> {
-        None
     }
 }
 
