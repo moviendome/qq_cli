@@ -23,24 +23,8 @@ impl ProjectTypeCommands for Middleman {
         "bundle install".to_string()
     }
 
-    fn migrate_command(&self) -> Option<String> {
-        None
-    }
-
-    fn console_command(&self) -> Option<String> {
-        None
-    }
-
     fn start_command(&self) -> Option<String> {
         Some("bundle exec middleman serve".to_string())
-    }
-
-    fn test_command(&self) -> Option<String> {
-        None
-    }
-
-    fn routes_command(&self) -> Option<String> {
-        None
     }
 }
 

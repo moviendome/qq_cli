@@ -1,88 +1,103 @@
-![GitHub Workflow Status](http://img.shields.io/github/actions/workflow/status/moviendome/qq_cli/rust.yml?branch=main&style=for-the-badge)
-![Lua](https://img.shields.io/badge/Made%20with%20Rust-blueviolet.svg?style=for-the-badge&logo=rust)
-
 # QQ CLI
 
-`QQ CLI` is a versatile command-line interface tool designed as a Proof of Concept to automate and simplify tasks in development environments. This first version primarily focuses on Ruby on Rails, Node.js & Rust projects. By intelligently detecting the project type can execute a set of basic commands.
+```
+ ________  ________           ________  ___       ___     
+|\   __  \|\   __  \         |\   ____\|\  \     |\  \    
+\ \  \|\  \ \  \|\  \        \ \  \___|\ \  \    \ \  \   
+ \ \  \\\  \ \  \\\  \        \ \  \    \ \  \    \ \  \  
+  \ \  \\\  \ \  \\\  \        \ \  \____\ \  \____\ \  \ 
+   \ \_____  \ \_____  \        \ \_______\ \_______\ \__\
+    \|___| \__\|___| \__\        \|_______|\|_______|\|__|
+          \|__|     \|__|                                 
+```
 
-## Features
+![GitHub Workflow Status](http://img.shields.io/github/actions/workflow/status/moviendome/qq_cli/rust.yml?branch=main&style=for-the-badge)
+![Rust](https://img.shields.io/badge/Made%20with%20Rust-blueviolet.svg?style=for-the-badge&logo=rust)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
 
-- **Focused on Ruby on Rails, Node.js, Middleman & Rust**: Tailored to handle common tasks in Rails, Node.js, Middleman and Rust projects.
-- **Intelligent Project Detection**: Automatically identifies the type of project and executes relevant commands.
-- **Basic Command Set**: Supports basic commands like installation, migration, starting servers, and running tests for Rails & Rust projects.
-- **Proof of Concept**: Demonstrates the potential for a more extensive tool with broader capabilities in future versions.
+## Automate and Simplify Tasks in Development Environments Executing Context-Aware Commands
 
-![Rails App Demo](https://moviendo.me/images/qq-cli/rails-app.gif)
+QQ CLI is a powerful, intelligent command-line interface that simplifies your development workflow across multiple project types. With automatic project detection and intuitive commands, QQ CLI streamlines common development tasks for Rails, Node.js, Middleman, and Rust projects.
 
-## Version 0.1.1
+## ✨ Features
 
-This initial version includes basic functionalities for [Rails](https://rubyonrails.org/), [Node.js](https://nodejs.org/en), [Middleman](https://middlemanapp.com/) and [Rust](https://www.rust-lang.org/) projects:
+- **Smart Project Detection** - Automatically identifies your project type and adapts commands accordingly
+- **Framework Support** - Seamlessly works with Ruby on Rails, Node.js, Middleman, and Rust projects
+- **Interactive Mode** - Enjoy an intuitive CLI experience with command suggestions and autocompletion
+- **Git Integration** - Execute common git commands without switching contexts
+- **Unified Command Structure** - Use consistent commands across different project types
 
-- Detection of project type.
-- Execution of basic commands:
-  - `install` (or `i`): Installs dependencies.
-  - `migrate` (or `m`): Runs database migrations for Rails projects.
-  - `start` (or `s`): Starts the project server.
-  - `test` (or `t`): Runs the test suite for Rails projects (Minitest or Rspec), Node.js & Rust.
-  - `routes` (or `r`): Show routes for Rails projects (uses fzf if available).
+## 🚀 Quick Commands
 
-## Future Development
+| Command | Alias | Description |
+|---------|-------|-------------|
+| `qq install` | `qq i` | Install project dependencies |
+| `qq migrate` | `qq m` | Run database migrations |
+| `qq console` | `qq c` | Launch interactive console |
+| `qq start` | `qq s` | Start development server |
+| `qq test` | `qq t` | Run test suite |
+| `qq routes` | `qq r` | Display application routes |
+| `qq g` | | Run git status |
+| `qq gl` | | Run git log |
+| `qq gp` | | Run git pull |
+| `qq gP` | | Run git push |
+| `qq gm` | | Switch to main branch |
+| `qq ga` | | Amend last commit |
 
-### Enhancing Functionality and User Experience
+## 🛠️ Installation
 
-- **Dynamic Command Execution**: Future versions aim to enhance command execution based on context, allowing for more intelligent and adaptive interactions depending on the project environment and user preferences.
+### From Source
 
-- **Configuration File Support**: To increase flexibility, I plan to implement support for configuration files. This will allow users to customize the behavior according to their specific needs, making the tool more versatile and personalized.
-
-- **Extensibility and Modularity**: A key goal is to design `QQ CLI` with extensibility and modularity in mind. This would enable easy integration of new languages, frameworks, and features, fostering a tool that evolves alongside the ever-changing landscape of software development.
-
-## Installation
-
-1. Clone the repository:
 ```bash
+# Clone the repository
 git clone https://github.com/moviendome/qq_cli.git
-```
-   
-2. Navigate the project directory:
-```bash
+
+# Navigate to project directory
 cd qq_cli
+
+# Build with Cargo
+cargo build --release or make build
+
+# Add to your PATH (optional)
+sudo cp target/release/qq /usr/local/bin or make install
 ```
 
-3. Build the project (requires Rust and Cargo):
-```bash
-cargo build --release
-```
+## 📖 Usage
 
-4. (Optional) Add the binary to your PATH for easy access:
-```bash
-sudo cp target/release/qq /usr/local/bin
-```
-
-## Usage
-Run QQ CLI from the command line within your project directory:
+Simply run `qq` in your project directory to launch the interactive menu, or use specific commands:
 
 ```bash
-qq [command]
-```
+# Interactive mode
+qq
 
-Example for installing dependencies for you project: 
-```bash
+# Direct command
 qq install
-```
 
-For more information on each command, use:
-```bash
+# Get help
 qq --help
 ```
-## Contributing
+
+## 🔮 Roadmap
+
+- **Expanded Framework Support** - Adding support for more languages and frameworks
+- **Custom Command Configuration** - Define your own commands via configuration files
+
+## 🤝 Contributing
+
+Contributions are welcome and appreciated! Here's how you can help:
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## ❤️ Support
 
 [!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/moviendome)
 
-Contributions are welcome! If you have a feature request, bug report, or a pull request, please feel free to contribute.
+If you find QQ CLI useful, consider supporting its development!
 
-Fork the repository and create your branch from main.
-Make your changes and test them.
-Send a pull request with a clear description of your changes.
+## 📜 License
 
-## License
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+QQ CLI is available under the MIT License. See the [LICENSE](LICENSE) file for more information.
