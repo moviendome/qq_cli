@@ -9,9 +9,9 @@ use project_types::rust::Rust;
 
 use clap::{App, SubCommand};
 use std::env;
-use std::process::Command;
+use std::process::{Command, ExitCode};
 
-fn main() {
+fn main() -> ExitCode {
     let logo = r#"
  ________  ________           ________  ___       ___     
 |\   __  \|\   __  \         |\   ____\|\  \     |\  \    
@@ -26,7 +26,7 @@ fn main() {
     println!("{}", logo);
 
     let app = App::new("QQ CLI")
-        .version("0.2")
+        .version("0.3")
         .author("Moviendome <estoy@moviendo.me>")
         .subcommand(
             SubCommand::with_name("install")
@@ -72,8 +72,8 @@ fn main() {
         )
         .subcommand(
             SubCommand::with_name("gm")
-                .about("Run git push")
-                .alias("g,"),
+                .about("Switch to main branch")
+                .alias("gm"),
         )
         .subcommand(
             SubCommand::with_name("ga")
@@ -93,81 +93,73 @@ fn main() {
         .or_else(|| Nodejs::detect(&current_dir));
 
     let commands = match project_type {
-        Some(pt) => pt,
+        Some(pt) => {
+            println!("Detected: {}", pt.name());
+            pt
+        }
         None => {
             println!("Project type found in current directory is not supported.");
-            return; // or use std::process::exit(1) for an error exit code
+            return ExitCode::FAILURE;
         }
     };
 
     // If no subcommand was provided, show the interactive menu
     if matches.subcommand_name().is_none() {
-        show_interactive_menu(commands);
-        return;
+        return show_interactive_menu(commands);
     }
 
-    match matches.subcommand() {
-        // For Project Types
-        Some(("install", _)) => run_command(&commands.install_command()),
-        Some(("migrate", _)) => {
-            if let Some(cmd) = commands.migrate_command() {
-                run_command(&cmd);
-            } else {
-                println!("'migrate' command not supported for this project type.");
-            }
+    let cmd_name = matches.subcommand_name().unwrap();
+    execute_command(cmd_name, &*commands)
+}
+
+fn execute_command(cmd: &str, commands: &dyn project_type_trait::ProjectTypeCommands) -> ExitCode {
+    match cmd {
+        "install" => run_command(&commands.install_command()),
+        "migrate" => run_optional_command(commands.migrate_command(), "migrate"),
+        "console" => run_optional_command(commands.console_command(), "console"),
+        "start" => run_optional_command(commands.start_command(), "start"),
+        "test" => run_optional_command(commands.test_command(), "test"),
+        "routes" => run_optional_command(commands.routes_command(), "routes"),
+        "g" => run_command("git status"),
+        "gl" => run_command("git lg"),
+        "gp" => run_command("git pull"),
+        "gP" => run_command("git push"),
+        "gm" => run_command("git checkout main"),
+        "ga" => run_command("git commit --amend --no-edit"),
+        _ => {
+            println!("Command not recognized.");
+            ExitCode::FAILURE
         }
-        Some(("console", _)) => {
-            if let Some(cmd) = commands.console_command() {
-                run_command(&cmd);
-            } else {
-                println!("'console' command not supported for this project type.");
-            }
-        }
-        Some(("start", _)) => {
-            if let Some(cmd) = commands.start_command() {
-                run_command(&cmd);
-            } else {
-                println!("'start' command not supported for this project type.");
-            }
-        }
-        Some(("test", _)) => {
-            if let Some(cmd) = commands.test_command() {
-                run_command(&cmd);
-            } else {
-                println!("'test' command not supported for this project type.");
-            }
-        }
-        Some(("routes", _)) => {
-            if let Some(cmd) = commands.routes_command() {
-                run_command(&cmd);
-            } else {
-                println!("'routes' command not supported for this project type.");
-            }
-        }
-        // For Git
-        Some(("g", _)) => run_command("git status"),
-        Some(("gl", _)) => run_command("git lg"),
-        Some(("gp", _)) => run_command("git pull"),
-        Some(("gP", _)) => run_command("git push"),
-        Some(("gm", _)) => run_command("git checkout main"),
-        Some(("ga", _)) => run_command("git commit --amend --no-edit"),
-        _ => println!("Command not recognized."),
     }
 }
 
-fn run_command(command: &str) {
-    let status = Command::new("sh")
-        .arg("-c")
-        .arg(command)
-        .status()
-        .expect("Failed to execute command");
-
-    if !status.success() {
-        eprintln!("Command failed to execute.");
+fn run_optional_command(cmd: Option<String>, name: &str) -> ExitCode {
+    match cmd {
+        Some(c) => run_command(&c),
+        None => {
+            println!("'{}' command not supported for this project type.", name);
+            ExitCode::SUCCESS
+        }
     }
 }
 
-fn show_interactive_menu(commands: Box<dyn project_type_trait::ProjectTypeCommands>) {
+fn run_command(command: &str) -> ExitCode {
+    match Command::new("sh").arg("-c").arg(command).status() {
+        Ok(status) => {
+            if status.success() {
+                ExitCode::SUCCESS
+            } else {
+                ExitCode::from(status.code().unwrap_or(1) as u8)
+            }
+        }
+        Err(e) => {
+            eprintln!("Failed to execute command: {}", e);
+            ExitCode::FAILURE
+        }
+    }
+}
+
+fn show_interactive_menu(commands: Box<dyn project_type_trait::ProjectTypeCommands>) -> ExitCode {
     let cmd = inquire::Text::new("Enter Command: ")
         .with_help_message("Enter a valid command")
         .with_autocomplete(&utils::suggester)
@@ -175,69 +167,32 @@ fn show_interactive_menu(commands: Box<dyn project_type_trait::ProjectTypeComman
         .unwrap_or_else(|_| "exit".to_string());
 
     match cmd.as_str() {
-        "install" => run_command(&commands.install_command()),
-        "migrate" => {
-            if let Some(cmd) = commands.migrate_command() {
-                run_command(&cmd);
-            } else {
-                println!("'migrate' command not supported for this project type.");
-            }
-        }
-        "console" => {
-            if let Some(cmd) = commands.console_command() {
-                run_command(&cmd);
-            } else {
-                println!("'console' command not supported for this project type.");
-            }
-        }
-        "start" => {
-            if let Some(cmd) = commands.start_command() {
-                run_command(&cmd);
-            } else {
-                println!("'start' command not supported for this project type.");
-            }
-        }
-        "test" => {
-            if let Some(cmd) = commands.test_command() {
-                run_command(&cmd);
-            } else {
-                println!("'test' command not supported for this project type.");
-            }
-        }
-        "routes" => {
-            if let Some(cmd) = commands.routes_command() {
-                run_command(&cmd);
-            } else {
-                println!("'routes' command not supported for this project type.");
-            }
-        }
-        "g" => run_command("git status"),
-        "gl" => run_command("git lg"),
-        "gp" => run_command("git pull"),
-        "gP" => run_command("git push"),
-        "gm" => run_command("git checkout main"),
-        "ga" => run_command("git commit --amend --no-edit"),
         "exit" => {
             println!("Exiting...");
-            std::process::exit(0);
+            ExitCode::SUCCESS
         }
         "help" => {
-            println!("Available commands:");
-            println!("  install - Installs dependencies for the project");
-            println!("  migrate - Runs database migrations");
-            println!("  console - Runs console");
-            println!("  start   - Starts the project");
-            println!("  test    - Run tests");
-            println!("  routes  - Show Routes");
-            println!("  g       - Run git status");
-            println!("  gl      - Run git log");
-            println!("  gp      - Run git pull");
-            println!("  gP      - Run git push");
-            println!("  gm      - Run git checkout main");
-            println!("  ga      - Run git commit --amend --no-edit");
-            println!("  exit    - Exit the program");
-            println!("  help    - Show this help message");
+            print_help();
+            ExitCode::SUCCESS
         }
-        _ => println!("Command not recognized."),
+        _ => execute_command(&cmd, &*commands),
     }
+}
+
+fn print_help() {
+    println!("Available commands:");
+    println!("  install - Installs dependencies for the project");
+    println!("  migrate - Runs database migrations");
+    println!("  console - Runs console");
+    println!("  start   - Starts the project");
+    println!("  test    - Run tests");
+    println!("  routes  - Show Routes");
+    println!("  g       - Run git status");
+    println!("  gl      - Run git log");
+    println!("  gp      - Run git pull");
+    println!("  gP      - Run git push");
+    println!("  gm      - Switch to main branch");
+    println!("  ga      - Run git commit --amend --no-edit");
+    println!("  exit    - Exit the program");
+    println!("  help    - Show this help message");
 }
