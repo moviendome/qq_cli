@@ -55,6 +55,9 @@ qq --help       # Show help
 | `console` | `c` | `bin/rails c` | - | - | - | - |
 | `migrate` | `m` | `bin/rails db:migrate` | - | - | - | - |
 | `routes` | `r` | `bin/rails routes` | - | - | - | - |
+| `deploy` | `d` | `kamal deploy` * | `kamal deploy` * | `kamal deploy` * | `kamal deploy` * | `kamal deploy` * |
+
+\* Available when `.kamal` directory exists
 
 ### Git Commands
 

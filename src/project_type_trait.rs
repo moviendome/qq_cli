@@ -19,4 +19,11 @@ pub trait ProjectTypeCommands: Debug {
     fn routes_command(&self) -> Option<String> {
         None
     }
+    fn deploy_command(&self) -> Option<String> {
+        if std::path::Path::new(".kamal").exists() {
+            Some("kamal deploy".to_string())
+        } else {
+            None
+        }
+    }
 }

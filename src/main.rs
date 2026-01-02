@@ -56,6 +56,11 @@ fn main() -> ExitCode {
                 .alias("r"),
         )
         .subcommand(
+            SubCommand::with_name("deploy")
+                .about("Deploy with Kamal")
+                .alias("d"),
+        )
+        .subcommand(
             SubCommand::with_name("g")
                 .about("Run git status")
                 .alias("g"),
@@ -122,6 +127,7 @@ fn execute_command(cmd: &str, commands: &dyn project_type_trait::ProjectTypeComm
         "start" => run_optional_command(commands.start_command(), "start"),
         "test" => run_optional_command(commands.test_command(), "test"),
         "routes" => run_optional_command(commands.routes_command(), "routes"),
+        "deploy" => run_optional_command(commands.deploy_command(), "deploy"),
         "g" => run_command("git status"),
         "gl" => run_command("git lg"),
         "gp" => run_command("git pull"),
@@ -189,6 +195,7 @@ fn print_help() {
     println!("  start   - Starts the project");
     println!("  test    - Run tests");
     println!("  routes  - Show Routes");
+    println!("  deploy  - Deploy with Kamal");
     println!("  g       - Run git status");
     println!("  gl      - Run git log");
     println!("  gp      - Run git pull");

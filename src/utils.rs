@@ -1,6 +1,6 @@
 pub fn suggester(val: &str) -> Result<Vec<String>, Box<dyn std::error::Error + Send + Sync>> {
     let commands = vec![
-        "install", "start", "console", "test", "routes", "migrate",
+        "install", "start", "console", "test", "routes", "migrate", "deploy",
         "g", "gl", "gp", "gP", "gm", "ga",
         "help", "exit",
     ];
