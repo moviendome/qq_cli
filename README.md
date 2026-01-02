@@ -15,89 +15,81 @@
 ![Rust](https://img.shields.io/badge/Made%20with%20Rust-blueviolet.svg?style=for-the-badge&logo=rust)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
 
-## Automate and Simplify Tasks in Development Environments Executing Context-Aware Commands
+Context-aware CLI that runs the right commands for your project type.
 
-QQ CLI is a powerful, intelligent command-line interface that simplifies your development workflow across multiple project types. With automatic project detection and intuitive commands, QQ CLI streamlines common development tasks for Rails, Node.js, Middleman, and Rust projects.
-
-## ✨ Features
-
-- **Smart Project Detection** - Automatically identifies your project type and adapts commands accordingly
-- **Framework Support** - Seamlessly works with Ruby on Rails, Node.js, Middleman, and Rust projects
-- **Interactive Mode** - Enjoy an intuitive CLI experience with command suggestions and autocompletion
-- **Git Integration** - Execute common git commands without switching contexts
-- **Unified Command Structure** - Use consistent commands across different project types
-
-## 🚀 Quick Commands
-
-| Command | Alias | Description |
-|---------|-------|-------------|
-| `qq install` | `qq i` | Install project dependencies |
-| `qq migrate` | `qq m` | Run database migrations |
-| `qq console` | `qq c` | Launch interactive console |
-| `qq start` | `qq s` | Start development server |
-| `qq test` | `qq t` | Run test suite |
-| `qq routes` | `qq r` | Display application routes |
-| `qq g` | | Run git status |
-| `qq gl` | | Run git log |
-| `qq gp` | | Run git pull |
-| `qq gP` | | Run git push |
-| `qq gm` | | Switch to main branch |
-| `qq ga` | | Amend last commit |
-
-## 🛠️ Installation
-
-### From Source
+## Installation
 
 ```bash
-# Clone the repository
 git clone https://github.com/moviendome/qq_cli.git
-
-# Navigate to project directory
 cd qq_cli
-
-# Build with Cargo
-cargo build --release or make build
-
-# Add to your PATH (optional)
-sudo cp target/release/qq /usr/local/bin or make install
+make build && make install
 ```
 
-## 📖 Usage
-
-Simply run `qq` in your project directory to launch the interactive menu, or use specific commands:
+## Usage
 
 ```bash
-# Interactive mode
-qq
-
-# Direct command
-qq install
-
-# Get help
-qq --help
+qq              # Interactive mode with autocomplete
+qq start        # Run command directly
+qq --help       # Show help
 ```
 
-## 🔮 Roadmap
+## Supported Projects
 
-- **Expanded Framework Support** - Adding support for more languages and frameworks
-- **Custom Command Configuration** - Define your own commands via configuration files
+| Project | Detection |
+|---------|-----------|
+| Rails | `Gemfile` |
+| Middleman | `Gemfile` + `source/` |
+| Next.js | `package.json` + `next.config.{js,mjs,ts}` |
+| Node.js | `package.json` |
+| Rust | `Cargo.toml` |
 
-## 🤝 Contributing
+## Commands
 
-Contributions are welcome and appreciated! Here's how you can help:
+### Project Commands
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+| Command | Alias | Rails | Middleman | Next.js | Node.js | Rust |
+|---------|-------|-------|-----------|---------|---------|------|
+| `install` | `i` | `bundle install` | `bundle install` | `npm install` | `npm install` | `cargo build` |
+| `start` | `s` | `bin/dev` or `bin/rails s` | `bundle exec middleman serve` | `npm run dev` | `npm start` | `cargo run` |
+| `test` | `t` | `bin/rspec` or `bin/rails test` | - | `npm test` | `npm test` | `cargo test` |
+| `console` | `c` | `bin/rails c` | - | - | - | - |
+| `migrate` | `m` | `bin/rails db:migrate` | - | - | - | - |
+| `routes` | `r` | `bin/rails routes` | - | - | - | - |
 
-## ❤️ Support
+### Git Commands
+
+| Command | Action |
+|---------|--------|
+| `g` | `git status` |
+| `gl` | `git log` |
+| `gp` | `git pull` |
+| `gP` | `git push` |
+| `gm` | `git checkout main` |
+| `ga` | `git commit --amend --no-edit` |
+
+## Examples
+
+```bash
+# In a Rails project
+$ qq start
+Detected: Rails
+# Runs: bin/dev
+
+# In a Next.js project
+$ qq test
+Detected: NextJS
+# Runs: npm test
+
+# In a Rust project
+$ qq i
+Detected: Rust
+# Runs: cargo build
+```
+
+## Support
 
 [!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/moviendome)
 
-If you find QQ CLI useful, consider supporting its development!
+## License
 
-## 📜 License
-
-QQ CLI is available under the MIT License. See the [LICENSE](LICENSE) file for more information.
+MIT
