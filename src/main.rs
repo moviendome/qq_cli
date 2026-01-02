@@ -3,6 +3,7 @@ mod project_types;
 mod utils;
 
 use project_types::middleman::Middleman;
+use project_types::nextjs::NextJs;
 use project_types::nodejs::Nodejs;
 use project_types::rails::Rails;
 use project_types::rust::Rust;
@@ -90,6 +91,7 @@ fn main() -> ExitCode {
     let project_type = Middleman::detect(&current_dir)
         .or_else(|| Rails::detect(&current_dir))
         .or_else(|| Rust::detect(&current_dir))
+        .or_else(|| NextJs::detect(&current_dir))
         .or_else(|| Nodejs::detect(&current_dir));
 
     let commands = match project_type {
