@@ -1,3 +1,4 @@
+pub mod anchor;
 pub mod middleman;
 pub mod nextjs;
 pub mod nodejs;

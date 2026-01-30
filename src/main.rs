@@ -2,6 +2,7 @@ mod project_type_trait;
 mod project_types;
 mod utils;
 
+use project_types::anchor::Anchor;
 use project_types::middleman::Middleman;
 use project_types::nextjs::NextJs;
 use project_types::nodejs::Nodejs;
@@ -86,6 +87,11 @@ fn main() -> ExitCode {
                 .about("Run git amend")
                 .alias("ga"),
         )
+        .subcommand(
+            SubCommand::with_name("gM")
+                .about("Merge previous branch")
+                .alias("gM"),
+        )
         .after_help("Use 'qq [command]' to execute a command.");
 
     let matches = app.get_matches();
@@ -95,6 +101,7 @@ fn main() -> ExitCode {
     // Detect the project type
     let project_type = Middleman::detect(&current_dir)
         .or_else(|| Rails::detect(&current_dir))
+        .or_else(|| Anchor::detect(&current_dir))
         .or_else(|| Rust::detect(&current_dir))
         .or_else(|| NextJs::detect(&current_dir))
         .or_else(|| Nodejs::detect(&current_dir));
@@ -134,6 +141,7 @@ fn execute_command(cmd: &str, commands: &dyn project_type_trait::ProjectTypeComm
         "gP" => run_command("git push"),
         "gm" => run_command("git checkout main"),
         "ga" => run_command("git commit --amend --no-edit"),
+        "gM" => run_command("git merge -"),
         _ => {
             println!("Command not recognized.");
             ExitCode::FAILURE
@@ -202,6 +210,7 @@ fn print_help() {
     println!("  gP      - Run git push");
     println!("  gm      - Switch to main branch");
     println!("  ga      - Run git commit --amend --no-edit");
+    println!("  gM      - Merge previous branch");
     println!("  exit    - Exit the program");
     println!("  help    - Show this help message");
 }
