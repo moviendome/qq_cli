@@ -28,7 +28,7 @@ fn main() -> ExitCode {
     println!("{}", logo);
 
     let app = App::new("QQ CLI")
-        .version("0.3")
+        .version("0.4")
         .author("Moviendome <estoy@moviendo.me>")
         .subcommand(
             SubCommand::with_name("install")
