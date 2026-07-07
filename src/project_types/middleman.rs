@@ -28,18 +28,28 @@ impl ProjectTypeCommands for Middleman {
     }
 }
 
-// #[cfg(test)]
-// mod tests {
-//     use super::*;
-//     use std::fs::File;
-//     use tempfile::tempdir;
-//
-//     #[test]
-//     fn test_detect_middleman_project() {
-//         let dir = tempdir().unwrap();
-//         File::create(dir.path().join("Gemfile")).unwrap();
-//
-//         let project_type = Middleman::detect(dir.path()); // This function returns Box<dyn ProjectTypeCommands>
-//         assert!(project_type.is_some() && project_type.unwrap().name() == "Middleman");
-//     }
-// }
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::fs::{create_dir, File};
+    use tempfile::tempdir;
+
+    #[test]
+    fn test_detect_middleman_project() {
+        let dir = tempdir().unwrap();
+        File::create(dir.path().join("Gemfile")).unwrap();
+        create_dir(dir.path().join("source")).unwrap();
+
+        let project_type = Middleman::detect(dir.path());
+        assert!(project_type.is_some() && project_type.unwrap().name() == "Middleman");
+    }
+
+    #[test]
+    fn test_middleman_not_detected_without_source_dir() {
+        let dir = tempdir().unwrap();
+        File::create(dir.path().join("Gemfile")).unwrap();
+
+        let project_type = Middleman::detect(dir.path());
+        assert!(project_type.is_none());
+    }
+}
