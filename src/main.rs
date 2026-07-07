@@ -1,101 +1,91 @@
-use qq_cli::{detect_project, project_type_trait, utils};
-
 use clap::{App, SubCommand};
+use qq_cli::config::{allow_project, AllowOutcome, ConfigPaths};
+use qq_cli::resolver::{resolve, Resolution};
 use std::env;
+use std::path::Path;
 use std::process::{Command, ExitCode};
 
-fn main() -> ExitCode {
-    let logo = r#"
- ________  ________           ________  ___       ___     
-|\   __  \|\   __  \         |\   ____\|\  \     |\  \    
-\ \  \|\  \ \  \|\  \        \ \  \___|\ \  \    \ \  \   
- \ \  \\\  \ \  \\\  \        \ \  \    \ \  \    \ \  \  
-  \ \  \\\  \ \  \\\  \        \ \  \____\ \  \____\ \  \ 
+const LOGO: &str = r#"
+ ________  ________           ________  ___       ___
+|\   __  \|\   __  \         |\   ____\|\  \     |\  \
+\ \  \|\  \ \  \|\  \        \ \  \___|\ \  \    \ \  \
+ \ \  \\\  \ \  \\\  \        \ \  \    \ \  \    \ \  \
+  \ \  \\\  \ \  \\\  \        \ \  \____\ \  \____\ \  \
    \ \_____  \ \_____  \        \ \_______\ \_______\ \__\
     \|___| \__\|___| \__\        \|_______|\|_______|\|__|
-          \|__|     \|__|                                 
+          \|__|     \|__|
 "#;
 
-    println!("{}", logo);
+/// The seven standard project commands, in their traditional help order.
+const CANONICAL_COMMANDS: [&str; 7] = [
+    "install", "migrate", "console", "start", "test", "routes", "deploy",
+];
 
-    let app = App::new("QQ CLI")
-        .version("0.4")
-        .author("Moviendome <estoy@moviendo.me>")
-        .subcommand(
-            SubCommand::with_name("install")
-                .about("Installs dependencies for the project")
-                .alias("i"),
-        )
-        .subcommand(
-            SubCommand::with_name("migrate")
-                .about("Runs database migrations")
-                .alias("m"),
-        )
-        .subcommand(
-            SubCommand::with_name("console")
-                .about("Runs console")
-                .alias("c"),
-        )
-        .subcommand(
-            SubCommand::with_name("start")
-                .about("Starts the project")
-                .alias("s"),
-        )
-        .subcommand(SubCommand::with_name("test").about("Run tests").alias("t"))
-        .subcommand(
-            SubCommand::with_name("routes")
-                .about("Show Routes")
-                .alias("r"),
-        )
-        .subcommand(
-            SubCommand::with_name("deploy")
-                .about("Deploy with Kamal")
-                .alias("d"),
-        )
-        .subcommand(
-            SubCommand::with_name("g")
-                .about("Run git status")
-                .alias("g"),
-        )
-        .subcommand(SubCommand::with_name("gl").about("Run git log").alias("gl"))
-        .subcommand(
-            SubCommand::with_name("gp")
-                .about("Run git pull")
-                .alias("gp"),
-        )
-        .subcommand(
-            SubCommand::with_name("gP")
-                .about("Run git push")
-                .alias("gP"),
-        )
-        .subcommand(
-            SubCommand::with_name("gm")
-                .about("Switch to main branch")
-                .alias("gm"),
-        )
-        .subcommand(
-            SubCommand::with_name("ga")
-                .about("Run git amend")
-                .alias("ga"),
-        )
-        .subcommand(
-            SubCommand::with_name("gM")
-                .about("Merge previous branch")
-                .alias("gM"),
-        )
-        .after_help("Use 'qq [command]' to execute a command.");
+/// (subcommand, shell command, description) — hardcoded and un-overridable.
+const GIT_SHORTCUTS: [(&str, &str, &str); 7] = [
+    ("g", "git status", "Run git status"),
+    ("gl", "git lg", "Run git log"),
+    ("gp", "git pull", "Run git pull"),
+    ("gP", "git push", "Run git push"),
+    ("gm", "git checkout main", "Switch to main branch"),
+    ("ga", "git commit --amend --no-edit", "Run git amend"),
+    ("gM", "git merge -", "Merge previous branch"),
+];
 
-    let matches = app.get_matches();
+/// Names a config can never claim (R11).
+const RESERVED: [&str; 10] = [
+    "g", "gl", "gp", "gP", "gm", "ga", "gM", "help", "exit", "allow",
+];
+
+fn main() -> ExitCode {
+    println!("{}", LOGO);
 
     let current_dir = env::current_dir().expect("Failed to get current directory");
+    let paths = ConfigPaths::discover(&current_dir);
 
-    // Detect the project type
-    let project_type = detect_project(&current_dir);
+    let help_or_version = env::args()
+        .nth(1)
+        .map_or(false, |a| matches!(a.as_str(), "-h" | "--help" | "-V" | "--version"));
 
-    let commands = match project_type {
-        Some(pt) => {
-            println!("Detected: {}", pt.name());
-            pt
+    // --help/--version must work in any directory, so a resolution failure
+    // (e.g. malformed config) falls back to the reserved-only surface.
+    let outcome = match resolve(&current_dir, &paths) {
+        Ok(outcome) => outcome,
+        Err(e) => {
+            if help_or_version {
+                build_app(&[]).get_matches(); // clap renders help/version and exits
+                return ExitCode::SUCCESS;
+            }
+            eprintln!("{e}");
+            return ExitCode::FAILURE;
+        }
+    };
+
+    let project_commands: Vec<String> = outcome
+        .resolution
+        .as_ref()
+        .map(command_list)
+        .unwrap_or_default();
+    let matches = build_app(&project_commands).get_matches();
+
+    // `qq allow` works everywhere, including before any type resolves.
+    if matches.subcommand_name() == Some("allow") {
+        return handle_allow(&paths);
+    }
+
+    if let Some(path) = &outcome.untrusted_project_config {
+        println!(
+            "Ignoring unapproved config {} — run 'qq allow' to trust it.",
+            path.display()
+        );
+    }
+
+    let resolution = match outcome.resolution {
+        Some(resolution) => {
+            if let Some(name) = &resolution.display_name {
+                println!("Detected: {}", name);
+            }
+            resolution
         }
         None => {
             println!("Project type found in current directory is not supported.");
@@ -103,44 +93,120 @@ fn main() -> ExitCode {
         }
     };
 
-    // If no subcommand was provided, show the interactive menu
-    if matches.subcommand_name().is_none() {
-        return show_interactive_menu(commands);
+    match matches.subcommand_name() {
+        None => show_interactive_menu(&resolution, &current_dir, &paths),
+        Some(cmd) => execute_command(cmd, &resolution, &current_dir),
     }
-
-    let cmd_name = matches.subcommand_name().unwrap();
-    execute_command(cmd_name, &*commands)
 }
 
-fn execute_command(cmd: &str, commands: &dyn project_type_trait::ProjectTypeCommands) -> ExitCode {
-    match cmd {
-        "install" => run_command(&commands.install_command()),
-        "migrate" => run_optional_command(commands.migrate_command(), "migrate"),
-        "console" => run_optional_command(commands.console_command(), "console"),
-        "start" => run_optional_command(commands.start_command(), "start"),
-        "test" => run_optional_command(commands.test_command(), "test"),
-        "routes" => run_optional_command(commands.routes_command(), "routes"),
-        "deploy" => run_optional_command(commands.deploy_command(), "deploy"),
-        "g" => run_command("git status"),
-        "gl" => run_command("git lg"),
-        "gp" => run_command("git pull"),
-        "gP" => run_command("git push"),
-        "gm" => run_command("git checkout main"),
-        "ga" => run_command("git commit --amend --no-edit"),
-        "gM" => run_command("git merge -"),
-        _ => {
-            println!("Command not recognized.");
+/// Project commands for this resolution: the standard seven in canonical
+/// order first (when available), then config-defined extras; reserved names
+/// are filtered out so a config can never shadow them.
+fn command_list(resolution: &Resolution) -> Vec<String> {
+    let names = resolution.command_names();
+    let mut list: Vec<String> = CANONICAL_COMMANDS
+        .iter()
+        .filter(|c| names.iter().any(|n| n == *c))
+        .map(|s| s.to_string())
+        .collect();
+    for name in names {
+        if !CANONICAL_COMMANDS.contains(&name.as_str()) && !RESERVED.contains(&name.as_str()) {
+            list.push(name);
+        }
+    }
+    list
+}
+
+fn build_app(project_commands: &[String]) -> App<'static> {
+    let mut app = App::new("QQ CLI")
+        .version("0.4")
+        .author("Moviendome <estoy@moviendo.me>");
+
+    // The canonical seven are always parseable — even when no type resolves —
+    // so `qq start` in an unrecognized directory and `qq migrate` on a type
+    // without migrate reach today's exact messages instead of a clap error.
+    for name in CANONICAL_COMMANDS {
+        let mut sub = SubCommand::with_name(name).about(about_for(name));
+        if let Some(alias) = alias_for(name) {
+            sub = sub.alias(alias);
+        }
+        app = app.subcommand(sub);
+    }
+    for name in project_commands {
+        if !CANONICAL_COMMANDS.contains(&name.as_str()) {
+            app = app.subcommand(
+                SubCommand::with_name(name.as_str()).about(about_for(name)),
+            );
+        }
+    }
+    for (name, _, about) in GIT_SHORTCUTS {
+        app = app.subcommand(SubCommand::with_name(name).about(about).alias(name));
+    }
+    app = app.subcommand(
+        SubCommand::with_name("allow").about("Trust this directory's .qq.toml config"),
+    );
+    app.after_help("Use 'qq [command]' to execute a command.")
+}
+
+fn about_for(name: &str) -> &'static str {
+    match name {
+        "install" => "Installs dependencies for the project",
+        "migrate" => "Runs database migrations",
+        "console" => "Runs console",
+        "start" => "Starts the project",
+        "test" => "Run tests",
+        "routes" => "Show Routes",
+        "deploy" => "Deploy with Kamal",
+        _ => "Run a project command",
+    }
+}
+
+fn alias_for(name: &str) -> Option<&'static str> {
+    match name {
+        "install" => Some("i"),
+        "migrate" => Some("m"),
+        "console" => Some("c"),
+        "start" => Some("s"),
+        "test" => Some("t"),
+        "routes" => Some("r"),
+        "deploy" => Some("d"),
+        _ => None,
+    }
+}
+
+fn handle_allow(paths: &ConfigPaths) -> ExitCode {
+    match allow_project(paths) {
+        Ok(AllowOutcome::Approved(path)) => {
+            println!("Approved {}", path.display());
+            ExitCode::SUCCESS
+        }
+        Ok(AllowOutcome::NothingToApprove) => {
+            println!("No .qq.toml found in this directory.");
+            ExitCode::SUCCESS
+        }
+        Err(e) => {
+            eprintln!("{e}");
             ExitCode::FAILURE
         }
     }
 }
 
-fn run_optional_command(cmd: Option<String>, name: &str) -> ExitCode {
-    match cmd {
-        Some(c) => run_command(&c),
+fn execute_command(cmd: &str, resolution: &Resolution, dir: &Path) -> ExitCode {
+    if let Some((_, shell, _)) = GIT_SHORTCUTS.iter().find(|(name, _, _)| *name == cmd) {
+        return run_command(shell);
+    }
+    match resolution.command(cmd, dir) {
+        Some(command) => run_command(&command),
         None => {
-            println!("'{}' command not supported for this project type.", name);
-            ExitCode::SUCCESS
+            let known = CANONICAL_COMMANDS.contains(&cmd)
+                || resolution.command_names().iter().any(|n| n == cmd);
+            if known {
+                println!("'{}' command not supported for this project type.", cmd);
+                ExitCode::SUCCESS
+            } else {
+                println!("Command not recognized.");
+                ExitCode::FAILURE
+            }
         }
     }
 }
@@ -161,10 +227,22 @@ fn run_command(command: &str) -> ExitCode {
     }
 }
 
-fn show_interactive_menu(commands: Box<dyn project_type_trait::ProjectTypeCommands>) -> ExitCode {
+fn show_interactive_menu(resolution: &Resolution, dir: &Path, paths: &ConfigPaths) -> ExitCode {
+    let mut suggestions: Vec<String> = command_list(resolution);
+    suggestions.extend(GIT_SHORTCUTS.iter().map(|(name, _, _)| name.to_string()));
+    suggestions.extend(["allow", "help", "exit"].map(String::from));
+
+    let autocomplete = move |val: &str| -> Result<Vec<String>, inquire::CustomUserError> {
+        Ok(suggestions
+            .iter()
+            .filter(|cmd| cmd.starts_with(val))
+            .cloned()
+            .collect())
+    };
+
     let cmd = inquire::Text::new("Enter Command: ")
         .with_help_message("Enter a valid command")
-        .with_autocomplete(&utils::suggester)
+        .with_autocomplete(autocomplete)
         .prompt()
         .unwrap_or_else(|_| "exit".to_string());
 
@@ -174,29 +252,23 @@ fn show_interactive_menu(commands: Box<dyn project_type_trait::ProjectTypeComman
             ExitCode::SUCCESS
         }
         "help" => {
-            print_help();
+            print_help(resolution);
             ExitCode::SUCCESS
         }
-        _ => execute_command(&cmd, &*commands),
+        "allow" => handle_allow(paths),
+        _ => execute_command(&cmd, resolution, dir),
     }
 }
 
-fn print_help() {
+fn print_help(resolution: &Resolution) {
     println!("Available commands:");
-    println!("  install - Installs dependencies for the project");
-    println!("  migrate - Runs database migrations");
-    println!("  console - Runs console");
-    println!("  start   - Starts the project");
-    println!("  test    - Run tests");
-    println!("  routes  - Show Routes");
-    println!("  deploy  - Deploy with Kamal");
-    println!("  g       - Run git status");
-    println!("  gl      - Run git log");
-    println!("  gp      - Run git pull");
-    println!("  gP      - Run git push");
-    println!("  gm      - Switch to main branch");
-    println!("  ga      - Run git commit --amend --no-edit");
-    println!("  gM      - Merge previous branch");
+    for name in command_list(resolution) {
+        println!("  {:<7} - {}", name, about_for(&name));
+    }
+    for (name, _, about) in GIT_SHORTCUTS {
+        println!("  {:<7} - {}", name, about);
+    }
+    println!("  allow   - Trust this directory's .qq.toml config");
     println!("  exit    - Exit the program");
     println!("  help    - Show this help message");
 }

@@ -1,12 +1,13 @@
-//! Behavior-lock suite (U1): characterizes the CURRENT command resolution
-//! before the config-first mechanism replaces it. U5's cutover must pass this
-//! suite unchanged (only the resolution API it calls gets repointed).
+//! Behavior-lock suite (U1): characterizes the command resolution behavior
+//! established before the config-first cutover. The U5 repoint swapped the
+//! resolution API (legacy chain → resolver) with zero assertion changes.
 //!
-//! Conditional command gates (`bin/dev`, `spec/`, `test/`, `.kamal`) resolve
-//! against the process working directory — only detection takes a directory
-//! parameter — so those cases run inside a serialized chdir block.
+//! The legacy conditional gates were cwd-relative, so those cases ran inside
+//! a serialized chdir block; the resolver is dir-parameterized, and the
+//! chdir wrapper is kept so the locked assertions run under both models.
 
-use qq_cli::{detect_project, project_command};
+use qq_cli::config::ConfigPaths;
+use qq_cli::resolver::resolve;
 use std::fs::{create_dir, File};
 use std::path::Path;
 use std::process::Command;
@@ -26,8 +27,22 @@ fn in_dir<T>(dir: &Path, f: impl FnOnce() -> T) -> T {
 }
 
 fn resolved(dir: &Path, command: &str) -> Option<String> {
-    let project = detect_project(dir).expect("fixture should detect a project type");
-    project_command(&*project, command)
+    let global = tempdir().unwrap(); // isolated: never reads the real HOME
+    let paths = ConfigPaths::with_global_dir(dir, global.path());
+    resolve(dir, &paths)
+        .unwrap()
+        .resolution
+        .expect("fixture should detect a project type")
+        .command(command, dir)
+}
+
+fn detected_name(dir: &Path) -> Option<String> {
+    let global = tempdir().unwrap();
+    let paths = ConfigPaths::with_global_dir(dir, global.path());
+    resolve(dir, &paths)
+        .unwrap()
+        .resolution
+        .and_then(|r| r.display_name)
 }
 
 /// Same liveness probe the Rails routes command uses.
@@ -227,26 +242,26 @@ fn anchor_deploy_ignores_kamal_gate() {
 #[test]
 fn gemfile_with_source_dir_is_middleman_not_rails() {
     let dir = middleman_fixture();
-    assert_eq!(detect_project(dir.path()).unwrap().name(), "Middleman");
+    assert_eq!(detected_name(dir.path()).as_deref(), Some("Middleman"));
 }
 
 #[test]
 fn anchor_toml_with_cargo_toml_is_anchor_not_rust() {
     let dir = anchor_fixture();
     File::create(dir.path().join("Cargo.toml")).unwrap();
-    assert_eq!(detect_project(dir.path()).unwrap().name(), "Anchor");
+    assert_eq!(detected_name(dir.path()).as_deref(), Some("Anchor"));
 }
 
 #[test]
 fn package_json_with_next_config_is_nextjs_not_nodejs() {
     let dir = nextjs_fixture();
-    assert_eq!(detect_project(dir.path()).unwrap().name(), "NextJS");
+    assert_eq!(detected_name(dir.path()).as_deref(), Some("NextJS"));
 }
 
 #[test]
 fn unrecognized_directory_detects_nothing() {
     let dir = tempdir().unwrap();
-    assert!(detect_project(dir.path()).is_none());
+    assert!(detected_name(dir.path()).is_none());
 }
 
 // -------------------------------------- CLI directory-independence (today)
@@ -254,9 +269,11 @@ fn unrecognized_directory_detects_nothing() {
 #[test]
 fn help_succeeds_in_unrecognized_directory() {
     let dir = tempdir().unwrap();
+    let global = tempdir().unwrap();
     let output = Command::new(env!("CARGO_BIN_EXE_qq"))
         .arg("--help")
         .current_dir(dir.path())
+        .env("XDG_CONFIG_HOME", global.path())
         .output()
         .unwrap();
     assert!(output.status.success(), "qq --help must succeed anywhere");
@@ -267,9 +284,11 @@ fn help_succeeds_in_unrecognized_directory() {
 #[test]
 fn version_succeeds_in_unrecognized_directory() {
     let dir = tempdir().unwrap();
+    let global = tempdir().unwrap();
     let output = Command::new(env!("CARGO_BIN_EXE_qq"))
         .arg("--version")
         .current_dir(dir.path())
+        .env("XDG_CONFIG_HOME", global.path())
         .output()
         .unwrap();
     assert!(output.status.success(), "qq --version must succeed anywhere");
