@@ -1,26 +1,14 @@
 //! U4: resolution engine tests — acceptance examples, layering, trust gate,
-//! config errors, detection order, and differential parity against the
-//! legacy chain (which still exists until U5 deletes it).
+//! config errors, and detection order. (The U4-era differential parity test
+//! against the legacy chain was retired in U5 when the legacy modules were
+//! deleted; the behavior-lock suite carries the parity assertions forward.)
 
 use qq_cli::config::{allow_project, AllowOutcome, ConfigPaths};
 use qq_cli::resolver::{resolve, ResolveOutcome};
-use qq_cli::{detect_project, project_command};
 use std::fs::{create_dir, create_dir_all, File};
 use std::io::Write as _;
 use std::path::Path;
-use std::sync::Mutex;
 use tempfile::{tempdir, TempDir};
-
-static CWD_LOCK: Mutex<()> = Mutex::new(());
-
-fn in_dir<T>(dir: &Path, f: impl FnOnce() -> T) -> T {
-    let _guard = CWD_LOCK.lock().unwrap_or_else(|e| e.into_inner());
-    let old = std::env::current_dir().unwrap();
-    std::env::set_current_dir(dir).unwrap();
-    let result = f();
-    std::env::set_current_dir(old).unwrap();
-    result
-}
 
 /// A project dir plus an isolated global config dir (never touches $HOME).
 struct Fixture {
@@ -293,57 +281,3 @@ fn detection_order_matches_legacy_chain() {
     }
 }
 
-// ------------------------------- differential parity vs the legacy chain
-
-/// For every fixture type and every project command, the resolver must
-/// produce exactly what the legacy chain produces — active falsification of
-/// parity while both mechanisms exist (legacy is deleted in U5).
-#[test]
-fn differential_parity_legacy_vs_resolver() {
-    const COMMANDS: [&str; 7] = ["install", "migrate", "console", "start", "test", "routes", "deploy"];
-
-    let mut fixtures: Vec<(&str, Fixture)> = Vec::new();
-
-    let plain = |markers: &[&str], dirs: &[&str]| {
-        let fx = Fixture::new();
-        for m in markers {
-            fx.touch(m);
-        }
-        for d in dirs {
-            fx.mkdir(d);
-        }
-        fx
-    };
-
-    fixtures.push(("middleman", plain(&["Gemfile"], &["source"])));
-    fixtures.push(("rails-bare", plain(&["Gemfile"], &[])));
-    fixtures.push(("rails-full", {
-        let fx = plain(&["Gemfile"], &["spec", "test", "bin", ".kamal"]);
-        fx.touch("bin/dev");
-        fx
-    }));
-    fixtures.push(("rails-testdir", plain(&["Gemfile"], &["test"])));
-    fixtures.push(("anchor", plain(&["Anchor.toml"], &[])));
-    fixtures.push(("anchor-kamal", plain(&["Anchor.toml"], &[".kamal"])));
-    fixtures.push(("rust", plain(&["Cargo.toml"], &[])));
-    fixtures.push(("rust-kamal", plain(&["Cargo.toml"], &[".kamal"])));
-    fixtures.push(("nextjs", plain(&["package.json", "next.config.js"], &[])));
-    fixtures.push(("nodejs", plain(&["package.json"], &[".kamal"])));
-
-    for (label, fx) in &fixtures {
-        let legacy_project = detect_project(fx.dir()).expect(label);
-        let resolution = fx.resolve().resolution.expect(label);
-
-        assert_eq!(
-            resolution.display_name.as_deref(),
-            Some(legacy_project.name()),
-            "{label}: detected type"
-        );
-
-        for command in COMMANDS {
-            let legacy = in_dir(fx.dir(), || project_command(&*legacy_project, command));
-            let new = resolution.command(command, fx.dir());
-            assert_eq!(new, legacy, "{label}: `{command}` must match legacy");
-        }
-    }
-}
