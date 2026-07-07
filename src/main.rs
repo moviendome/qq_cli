@@ -61,6 +61,15 @@ fn main() -> ExitCode {
         }
     };
 
+    // The notice prints before argument parsing so it appears even when the
+    // user invokes a config-defined command that isn't registered yet.
+    if let Some(path) = &outcome.untrusted_project_config {
+        println!(
+            "Ignoring unapproved config {} — run 'qq allow' to trust it.",
+            path.display()
+        );
+    }
+
     let project_commands: Vec<String> = outcome
         .resolution
         .as_ref()
@@ -71,13 +80,6 @@ fn main() -> ExitCode {
     // `qq allow` works everywhere, including before any type resolves.
     if matches.subcommand_name() == Some("allow") {
         return handle_allow(&paths);
-    }
-
-    if let Some(path) = &outcome.untrusted_project_config {
-        println!(
-            "Ignoring unapproved config {} — run 'qq allow' to trust it.",
-            path.display()
-        );
     }
 
     let resolution = match outcome.resolution {
