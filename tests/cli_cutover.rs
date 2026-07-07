@@ -74,6 +74,20 @@ fn ae5_end_to_end_allow_then_override_applies() {
 }
 
 #[test]
+fn unapproved_config_command_still_surfaces_the_notice() {
+    // `qq hello` before approval: the subcommand isn't registered (clap
+    // rejects it), but the notice must still tell the user why.
+    let cli = Cli::new();
+    cli.touch("Cargo.toml")
+        .config("[commands]\nhello = [{ run = \"echo hi\" }]\n");
+    let output = cli.run(&["hello"]);
+    assert!(!output.status.success());
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    assert!(stdout.contains("Ignoring unapproved config"), "notice missing:\n{stdout}");
+    assert!(!stdout.contains("hi\n"), "unapproved command must not run");
+}
+
+#[test]
 fn ae4_config_added_command_runs_as_direct_subcommand() {
     let cli = Cli::new();
     cli.touch("Cargo.toml")

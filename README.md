@@ -80,6 +80,56 @@ Detection runs top-to-bottom — more specific patterns (Middleman, Anchor) are 
 | `ga` | `git commit --amend --no-edit` |
 | `gM` | `git merge -` (merge previous branch) |
 
+## Configuration
+
+QQ reads two optional config files, written in the same format as its built-in project types:
+
+| File | Scope | Trust |
+|------|-------|-------|
+| `.qq.toml` in the project directory | That project only | Requires one-time `qq allow` |
+| `~/.config/qq/config.toml` | Everywhere | Implicitly trusted |
+
+Precedence is merge-based, most explicit wins per command: per-project config > global config > built-in detection — a config that redefines only `test` leaves every other command's built-in behavior intact, and a type you declare beats one detection guessed.
+
+Because a project's `.qq.toml` defines shell commands, QQ ignores it until you approve it once with `qq allow` (re-approval is required whenever the file changes). Git shortcuts and `help`, `exit`, `allow` are reserved — a config can never redefine them.
+
+### Override a command
+
+```toml
+# .qq.toml — redefine only `test`; everything else stays built-in
+[commands]
+test = [{ run = "bin/rails test:system" }]
+```
+
+### Add your own commands
+
+```toml
+# .qq.toml or ~/.config/qq/config.toml
+[commands]
+lint = [{ run = "cargo clippy --all-targets" }]
+```
+
+New commands show up in `qq` autocomplete and run as `qq lint`.
+
+### Define a whole project type
+
+```toml
+# ~/.config/qq/config.toml — detected in any directory with a justfile
+[types.just]
+name = "Just"
+detect = ["justfile"]
+
+[types.just.commands]
+install = [{ run = "just setup" }]
+test = [{ run = "just test" }]
+start = [
+    { run = "just dev", when_path = "dev.env" },
+    { run = "just run" },
+]
+```
+
+Candidates are tried in order; the first whose condition passes wins. Conditions are `when_path` (a path exists in the project) and `when_bin` (a binary answers `--version`) — that's the whole language, by design.
+
 ## Examples
 
 ```bash
@@ -100,6 +150,8 @@ Detected: Rust
 ```
 
 ## Contributing
+
+Built-in project types are TOML files in `src/definitions/` — the same format as user config. Adding support for a new framework means adding one definition file plus a fixture test; no Rust changes needed.
 
 1. Fork the repo
 2. Create your branch (`git checkout -b feat/my-feature`)
