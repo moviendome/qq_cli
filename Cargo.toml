@@ -15,6 +15,7 @@ clap = "3.0"
 inquire = "0.7.5"
 serde = { version = "1", features = ["derive"] }
 toml = "0.8"
+include_dir = "0.7"
 
 [dev-dependencies]
 tempfile = "3.2.0"

@@ -1,0 +1,9 @@
+[types.middleman]
+name = "Middleman"
+priority = 10
+detect = ["Gemfile", "source"]
+
+[types.middleman.commands]
+install = [{ run = "bundle install" }]
+start = [{ run = "bundle exec middleman serve" }]
+deploy = [{ run = "kamal deploy", when_path = ".kamal" }]

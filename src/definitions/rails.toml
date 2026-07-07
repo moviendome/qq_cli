@@ -1,0 +1,22 @@
+[types.rails]
+name = "Rails"
+priority = 20
+detect = ["Gemfile"]
+
+[types.rails.commands]
+install = [{ run = "bundle install" }]
+migrate = [{ run = "bin/rails db:migrate" }]
+console = [{ run = "bin/rails c" }]
+start = [
+    { run = "bin/dev", when_path = "bin/dev" },
+    { run = "bin/rails s" },
+]
+test = [
+    { run = "bin/rspec spec/", when_path = "spec" },
+    { run = "bin/rails test", when_path = "test" },
+]
+routes = [
+    { run = "bin/rails routes | fzf -e", when_bin = "fzf" },
+    { run = "bin/rails routes" },
+]
+deploy = [{ run = "kamal deploy", when_path = ".kamal" }]

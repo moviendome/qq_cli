@@ -1,0 +1,11 @@
+[types.nextjs]
+name = "NextJS"
+priority = 50
+detect = ["package.json"]
+detect_any = ["next.config.js", "next.config.mjs", "next.config.ts"]
+
+[types.nextjs.commands]
+install = [{ run = "npm install" }]
+start = [{ run = "npm run dev" }]
+test = [{ run = "npm test" }]
+deploy = [{ run = "kamal deploy", when_path = ".kamal" }]
