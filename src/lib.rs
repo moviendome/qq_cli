@@ -1,7 +1,9 @@
+pub mod config;
 pub mod definition;
 pub mod definitions;
 pub mod project_type_trait;
 pub mod project_types;
+pub mod resolver;
 pub mod utils;
 
 use project_type_trait::ProjectTypeCommands;
