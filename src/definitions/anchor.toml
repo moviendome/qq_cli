@@ -1,0 +1,10 @@
+[types.anchor]
+name = "Anchor"
+priority = 30
+detect = ["Anchor.toml"]
+
+[types.anchor.commands]
+install = [{ run = "anchor build" }]
+start = [{ run = "anchor localnet" }]
+test = [{ run = "anchor test" }]
+deploy = [{ run = "anchor deploy" }]

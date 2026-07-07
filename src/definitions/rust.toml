@@ -1,0 +1,10 @@
+[types.rust]
+name = "Rust"
+priority = 40
+detect = ["Cargo.toml"]
+
+[types.rust.commands]
+install = [{ run = "cargo build" }]
+start = [{ run = "cargo run" }]
+test = [{ run = "cargo test" }]
+deploy = [{ run = "kamal deploy", when_path = ".kamal" }]

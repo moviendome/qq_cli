@@ -1,4 +1,5 @@
 pub mod definition;
+pub mod definitions;
 pub mod project_type_trait;
 pub mod project_types;
 pub mod utils;

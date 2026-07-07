@@ -1,0 +1,10 @@
+[types.nodejs]
+name = "Nodejs"
+priority = 60
+detect = ["package.json"]
+
+[types.nodejs.commands]
+install = [{ run = "npm install" }]
+start = [{ run = "npm start" }]
+test = [{ run = "npm test" }]
+deploy = [{ run = "kamal deploy", when_path = ".kamal" }]
