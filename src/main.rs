@@ -1,13 +1,4 @@
-mod project_type_trait;
-mod project_types;
-mod utils;
-
-use project_types::anchor::Anchor;
-use project_types::middleman::Middleman;
-use project_types::nextjs::NextJs;
-use project_types::nodejs::Nodejs;
-use project_types::rails::Rails;
-use project_types::rust::Rust;
+use qq_cli::{detect_project, project_type_trait, utils};
 
 use clap::{App, SubCommand};
 use std::env;
@@ -99,12 +90,7 @@ fn main() -> ExitCode {
     let current_dir = env::current_dir().expect("Failed to get current directory");
 
     // Detect the project type
-    let project_type = Middleman::detect(&current_dir)
-        .or_else(|| Rails::detect(&current_dir))
-        .or_else(|| Anchor::detect(&current_dir))
-        .or_else(|| Rust::detect(&current_dir))
-        .or_else(|| NextJs::detect(&current_dir))
-        .or_else(|| Nodejs::detect(&current_dir));
+    let project_type = detect_project(&current_dir);
 
     let commands = match project_type {
         Some(pt) => {
