@@ -121,7 +121,7 @@ fn command_list(resolution: &Resolution) -> Vec<String> {
 
 fn build_app(project_commands: &[String]) -> App<'static> {
     let mut app = App::new("QQ CLI")
-        .version("0.4")
+        .version("0.5")
         .author("Moviendome <estoy@moviendo.me>");
 
     // The canonical seven are always parseable — even when no type resolves —

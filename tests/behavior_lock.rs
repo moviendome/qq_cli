@@ -293,5 +293,5 @@ fn version_succeeds_in_unrecognized_directory() {
         .unwrap();
     assert!(output.status.success(), "qq --version must succeed anywhere");
     let stdout = String::from_utf8_lossy(&output.stdout);
-    assert!(stdout.contains("0.4"), "version should print");
+    assert!(stdout.contains("0.5"), "version should print");
 }
